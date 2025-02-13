@@ -1,0 +1,27 @@
+.react-datepicker-wrapper {
+  width: 100%;
+  z-index: 99;
+}
+
+.joditeditor {
+  z-index: 0;
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+.react-datepicker__month-select {
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.react-datepicker__month-select option {
+  padding: 5px; /* Add padding to the options */
+}
+
+.react-datepicker__year-select {
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

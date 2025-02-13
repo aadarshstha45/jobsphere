@@ -1,0 +1,191 @@
+import { useFetchSavedJobs } from "@/api/function/bookmarks";
+import { DeleteAlert } from "@/components/Form/Modal";
+import DataTable from "@/components/Table";
+import {
+  Button,
+  Link as ChakraLink,
+  HStack,
+  Icon,
+  Stack,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
+import { CheckCircle, Eye, Trash, XCircle } from "@phosphor-icons/react";
+import moment from "moment";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+const SavedJobs = () => {
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const pageFromUrl = Number(urlParams.get("page")) || 1;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+  const [searchText, setSearchText] = useState("");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [id, setId] = useState<string | null>(null);
+  const { data, isPending, isFetching } = useFetchSavedJobs({
+    perPage: perPage,
+    page: pageFromUrl,
+  });
+
+  useEffect(() => {
+    setCurrentPage(pageFromUrl);
+  }, [pageFromUrl]);
+
+  const columns = [
+    {
+      header: "S.N.",
+      accessorKey: "sn",
+      enableSorting: false,
+      cell: ({ row }: any) => {
+        return <Text>{perPage * (currentPage - 1) + (row.index + 1)}</Text>;
+      },
+    },
+    {
+      header: "Title",
+      accessorKey: "job.title",
+      enableSorting: true,
+      cell: ({ row }: any) => {
+        return (
+          <Stack>
+            <ChakraLink
+              to={`/find-job/${row.original.job.id}`}
+              as={Link}
+              fontSize={{ base: "16px", md: "18px" }}
+              fontWeight={500}
+              color={"primary.500"}
+            >
+              {row.original.job.title}
+            </ChakraLink>
+          </Stack>
+        );
+      },
+    },
+
+    {
+      header: "Posted On",
+      accessorKey: "createdAt",
+      cell: ({ row }: any) => {
+        return (
+          <Text fontSize={{ base: "16px", md: "18px" }}>
+            {moment(row.original.job.createdAt).format("DD MMM YYYY")}
+          </Text>
+        );
+      },
+    },
+    {
+      header: "Expires On",
+      accessorKey: "job.expiryDate",
+      cell: ({ row }: any) => {
+        return (
+          <Text fontSize={{ base: "16px", md: "18px" }}>
+            {moment(row.original.job.expiryDate).format("DD MMM YYYY")}
+          </Text>
+        );
+      },
+    },
+    {
+      header: "Status",
+      accessorKey: "job.isActive",
+      enableSorting: false,
+      cell: ({ row }: any) => {
+        const { isActive } = row.original.job;
+        return (
+          <HStack color={isActive ? "success.500" : "red.500"}>
+            <Icon as={isActive ? CheckCircle : XCircle} boxSize={5} />
+            <Text fontSize={{ base: "16px", md: "18px" }} fontWeight={500}>
+              {isActive ? "Active" : "Expired"}
+            </Text>
+          </HStack>
+        );
+      },
+    },
+    {
+      header: "Action",
+      accessorKey: "action",
+      enableSorting: false,
+      cell: ({ row }: any) => {
+        const handleDeleteOpen = (id: string) => {
+          setId(id);
+          onOpen();
+        };
+
+        return (
+          <HStack gap={1}>
+            <Button
+              onClick={() => navigate(`/find-job/${row.original.job.id}`)}
+              p={1}
+              size="xs"
+              colorScheme="teal"
+            >
+              <Icon as={Eye} boxSize={5} />
+            </Button>
+            <Button
+              onClick={() => handleDeleteOpen(row.original.job.id)}
+              p={1}
+              size="xs"
+              colorScheme="red"
+            >
+              <Icon as={Trash} boxSize={5} />
+            </Button>
+          </HStack>
+        );
+      },
+    },
+  ];
+
+  return (
+    <>
+      <DataTable
+        canFilter={false}
+        filter={{
+          globalFilter: searchText,
+          setGlobalFilter: setSearchText,
+        }}
+        addButton={false}
+        searchText={searchText}
+        setSearchText={setSearchText}
+        data={data?.data?.rows || []}
+        count={data?.data?.count || 0}
+        columns={columns}
+        noDataMessage="You have not saved any job yet."
+        navigate={() => navigate("create")}
+        pagination={
+          data?.pagination
+            ? {
+                manual: true,
+                totalRows: data.pagination.totalRecords,
+                pageCount: data.pagination.totalPages,
+                pageParams: {
+                  pageIndex: data.pagination.currentPage,
+                  pageSize: data.pagination.perPage,
+                },
+              }
+            : undefined
+        }
+        handlePageSize={setPerPage}
+        isFetching={isFetching}
+        isLoading={isPending}
+      />
+      <DeleteAlert
+        isOpen={isOpen}
+        onClose={() => {
+          setId(null);
+          onClose();
+        }}
+        heading="Remove Saved Job"
+        message="Are you sure you want to remove this saved job?"
+        deleteText="Remove"
+        isDeleting={false}
+        onDelete={() => {
+          // delete function
+          console.log("Delete", id);
+        }}
+      />
+    </>
+  );
+};
+
+export default SavedJobs;

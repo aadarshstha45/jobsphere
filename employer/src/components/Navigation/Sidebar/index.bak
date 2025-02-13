@@ -1,0 +1,125 @@
+import { useLogoutUser } from "@/api/auth";
+import { Flex, HStack, Icon, Link, Text, Tooltip } from "@chakra-ui/react";
+import { Briefcase, SignOut } from "@phosphor-icons/react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { sidebarData } from "./data";
+const Sidebar = () => {
+  const path = useLocation().pathname;
+  const logout = useLogoutUser();
+
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    const response = await logout.mutateAsync();
+    if (response.status === 200) {
+      navigate("/login", { replace: true });
+    }
+    window.location.reload();
+  };
+
+  return (
+    <Flex
+      overflowY={"auto"}
+      overflowX={"hidden"}
+      pos={"fixed"}
+      flexDir={"column"}
+      bg={"gray.50"}
+      minH={window.innerHeight}
+      w={{ sm: "70px", md: "250px" }}
+      borderRadius={"1px solid"}
+      borderColor={"gray.100"}
+      transition={"all 0.3s"}
+      transitionProperty={"width"}
+      gap={2}
+      py={4}
+      display={{ base: "none", sm: "flex" }}
+    >
+      <HStack pl={2}>
+        <Icon as={Briefcase} boxSize={8} />
+        <Text display={{ sm: "none", md: "block" }} fontSize={"lg"}>
+          JobSphere
+        </Text>
+      </HStack>
+      {sidebarData.map((item) => (
+        <Tooltip
+          display={{ base: "block", md: "none" }}
+          label={item.title}
+          key={item.id}
+          placement="right"
+        >
+          <Link
+            as={NavLink}
+            _hover={{
+              bg: "gray.100",
+              color: "primary.500",
+              borderLeft: "4px solid",
+              borderColor: "primary.500",
+            }}
+            _activeLink={
+              item.to !== ""
+                ? {
+                    bg: "primary.100",
+                    color: "primary.500",
+                    borderLeft: "4px solid",
+                    borderColor: "primary.500",
+                  }
+                : path === "/admin/"
+                ? {
+                    bg: "primary.100",
+                    color: "primary.500",
+                    borderLeft: "4px solid",
+                    borderColor: "primary.500",
+                  }
+                : {
+                    bg: "none",
+                  }
+            }
+            borderLeft={"4px solid"}
+            borderColor={"transparent"}
+            to={`/admin/${item.to}`}
+            key={item.id}
+          >
+            <Flex p={2} align={"center"} borderRadius={"md"}>
+              <Icon as={item.icon} boxSize={5} />
+              <Text
+                pos={{ base: "absolute", md: "static" }}
+                transition={"all 0.2s"}
+                opacity={{ base: 0, md: 1 }}
+                ml={4}
+                fontSize={"md"}
+              >
+                {item.title}
+              </Text>
+            </Flex>
+          </Link>
+        </Tooltip>
+      ))}
+      <Flex
+        _hover={{
+          bg: "gray.100",
+          color: "primary.500",
+          borderLeft: "4px solid",
+          borderColor: "primary.500",
+        }}
+        borderLeft={"4px solid"}
+        borderColor={"transparent"}
+        onClick={handleLogout}
+        cursor={"pointer"}
+      >
+        <Flex p={2} align={"center"} borderRadius={"md"}>
+          <Icon as={SignOut} boxSize={5} />
+          <Text
+            pos={{ base: "absolute", md: "static" }}
+            transition={"all 0.2s"}
+            opacity={{ base: 0, md: 1 }}
+            ml={4}
+            fontSize={"md"}
+          >
+            Logout
+          </Text>
+        </Flex>
+      </Flex>
+    </Flex>
+  );
+};
+
+export default Sidebar;

@@ -1,0 +1,15 @@
+ <ChakraLink
+                        key={index}
+                        as={NavLink}
+                        _hover={{ textDecor: "none" }}
+                        to={item.to}
+                      >
+                        <MenuItem
+                          borderRadius={5}
+                          _hover={{ bg: "primary.500", color: "white" }}
+                          icon={<Icon as={item.icon} boxSize={5} />}
+                          fontSize={{ base: "12px", md: "14px", xl: "16px" }}
+                        >
+                          {item.label}
+                        </MenuItem>
+                      </ChakraLink>
